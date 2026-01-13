@@ -1,4 +1,4 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+// Sidebar imports removed as they are not used here and caused build errors
 import { AppSidebar } from "@/components/app-sidebar"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
