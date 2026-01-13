@@ -39,7 +39,7 @@ type Lesson = {
 }
 
 export function DashboardWidgets() {
-    const [date, setDate] = useState<Date | undefined>(new Date())
+    const [date, setDate] = useState<Date | undefined>(undefined)
     const [reminders, setReminders] = useState<Reminder[]>([])
     const [newReminder, setNewReminder] = useState("")
     const [isReminderDialogOpen, setIsReminderDialogOpen] = useState(false)
