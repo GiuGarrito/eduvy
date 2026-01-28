@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, Users, BookOpen, DollarSign, Megaphone, Plus } from "lucide-react"
+import { Home, Users, BookOpen, DollarSign, Megaphone, Plus, Calendar } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -40,9 +40,9 @@ export function MobileNav() {
                         <DollarSign className={cn("h-6 w-6 transition-colors", isActive('/financeiro') ? "text-white fill-white/20" : "text-white/60")} />
                         <span className={cn("text-[10px] font-medium", isActive('/financeiro') ? "text-white" : "text-white/60")}>Financeiro</span>
                     </Link>
-                    <Link href="/avisos" className="flex flex-col items-center gap-1">
-                        <Megaphone className={cn("h-6 w-6 transition-colors", isActive('/avisos') ? "text-white fill-white/20" : "text-white/60")} />
-                        <span className={cn("text-[10px] font-medium", isActive('/avisos') ? "text-white" : "text-white/60")}>Avisos</span>
+                    <Link href="/agenda" className="flex flex-col items-center gap-1">
+                        <Plus className={cn("h-6 w-6 transition-colors", isActive('/agenda') ? "text-white fill-white/20" : "text-white/60")} />
+                        <span className={cn("text-[10px] font-medium", isActive('/agenda') ? "text-white" : "text-white/60")}>Agenda</span>
                     </Link>
                 </div>
 

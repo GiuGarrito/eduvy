@@ -104,6 +104,21 @@ export default async function StudentPortalHome() {
                 </Card>
             </div>
 
+            {/* Quick Actions */}
+            <Card>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Ações Rápidas</CardTitle>
+                </CardHeader>
+                <CardContent className="grid gap-2">
+                    <Button asChild className="w-full justify-start" variant="outline">
+                        <Link href="/portal/agendar">
+                            <Calendar className="mr-2 h-4 w-4" />
+                            Agendar Nova Aula
+                        </Link>
+                    </Button>
+                </CardContent>
+            </Card>
+
             {/* Quick Actions / Notices */}
             <Card className="bg-blue-50 border-blue-100">
                 <CardHeader>
