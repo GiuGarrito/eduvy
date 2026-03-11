@@ -58,8 +58,17 @@ interface Profile {
     email: string
 }
 
+interface BlockedDate {
+    id: string
+    date: string
+    start_time?: string
+    end_time?: string
+    reason?: string
+}
+
 export default function AgendaPage() {
     const [lessons, setLessons] = useState<Lesson[]>([])
+    const [blockedDates, setBlockedDates] = useState<BlockedDate[]>([])
     const [students, setStudents] = useState<Profile[]>([])
     const [loading, setLoading] = useState(true)
     const supabase = createClient()
@@ -85,19 +94,30 @@ export default function AgendaPage() {
         const startDate = format(startOfCurrentWeek, 'yyyy-MM-dd')
         const endDate = format(addDays(startOfCurrentWeek, 4), 'yyyy-MM-dd') // Friday
 
-        const { data, error } = await supabase
+        // Fetch Lessons
+        const { data: lessonsData } = await supabase
             .from('lessons')
             .select(`
-                id, title, date, time,
+                id, title, date, time, status,
                 student:profiles(full_name)
             `)
             .gte('date', startDate)
             .lte('date', endDate)
             .order('time')
 
-        if (data) {
+        // Fetch Blocked Dates
+        const { data: blocksData } = await supabase
+            .from('blocked_dates')
+            .select('*')
+            .gte('date', startDate)
+            .lte('date', endDate)
+
+        if (lessonsData) {
             // @ts-ignore
-            setLessons(data)
+            setLessons(lessonsData)
+        }
+        if (blocksData) {
+            setBlockedDates(blocksData)
         }
         setLoading(false)
     }
@@ -245,7 +265,12 @@ export default function AgendaPage() {
 
             <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5 h-[calc(100vh-200px)]">
                 {weekDates.map((dayDate: Date, index: number) => {
-                    const dayLessons = lessons.filter((l: Lesson) => l.date === format(dayDate, 'yyyy-MM-dd'))
+                    const dateStr = format(dayDate, 'yyyy-MM-dd')
+                    const dayLessons = lessons.filter((l: Lesson) => 
+                        l.date === dateStr && 
+                        l.status !== 'cancelled'
+                    )
+                    const dayBlocks = blockedDates.filter((b) => b.date === dateStr)
                     const currentDayName = weekDays[index]
 
                     return (
@@ -274,7 +299,23 @@ export default function AgendaPage() {
                                                 )}
                                             </div>
                                         ))}
-                                        {dayLessons.length === 0 && (
+
+                                        {dayBlocks.map((block) => (
+                                            <div
+                                                key={block.id}
+                                                className="p-3 bg-red-50 border-red-100 rounded-md border shadow-sm text-sm"
+                                            >
+                                                <div className="font-bold text-red-600">
+                                                    {block.start_time && block.end_time 
+                                                        ? `${block.start_time.slice(0, 5)} - ${block.end_time.slice(0, 5)}`
+                                                        : 'DIA INTEIRO'}
+                                                </div>
+                                                <div className="font-medium text-red-800">HORÁRIO BLOQUEADO</div>
+                                                <div className="text-[10px] text-red-500 mt-1 uppercase">Indisponível para alunos</div>
+                                            </div>
+                                        ))}
+
+                                        {dayLessons.length === 0 && dayBlocks.length === 0 && (
                                             <div className="text-center text-xs text-muted-foreground py-4">
                                                 Livre
                                             </div>

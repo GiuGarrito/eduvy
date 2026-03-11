@@ -119,12 +119,18 @@ export default function AgendarAulaPage() {
 
             while (isBefore(current, end)) {
                 const timeStr = format(current, 'HH:mm')
+                // Slot duration is 60 mins for logic (even if display says 55)
+                const slotEnd = format(new Date(current.getTime() + 60 * 60 * 1000), 'HH:mm')
 
                 const slotIsBlocked = blocksForDay.some(b => {
-                    if (!b.start_time || !b.end_time) return false
+                    // If no start/end time, it's a full day block
+                    if (!b.start_time || !b.end_time) return true
+                    
                     const bStart = b.start_time.slice(0, 5)
                     const bEnd = b.end_time.slice(0, 5)
-                    return timeStr >= bStart && timeStr < bEnd
+                    
+                    // Overlap logic: (StartA < EndB) && (EndA > StartB)
+                    return timeStr < bEnd && slotEnd > bStart
                 })
 
                 if (!takenTimes.includes(timeStr) && !slotIsBlocked) {
