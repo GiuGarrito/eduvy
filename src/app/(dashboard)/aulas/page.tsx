@@ -2,7 +2,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Calendar as CalendarIcon, List, Search, Plus } from "lucide-react"
+import { Calendar as CalendarIcon, List, Search, Plus, Filter } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
@@ -36,6 +37,7 @@ export default function LessonsPage() {
     const [searchTerm, setSearchTerm] = useState("")
     const [isAddLessonOpen, setIsAddLessonOpen] = useState(false)
     const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
+    const [statusFilter, setStatusFilter] = useState<string>("all")
     const [lessons, setLessons] = useState<Lesson[]>([])
     const [loading, setLoading] = useState(true)
     const supabase = createClient()
@@ -77,11 +79,15 @@ export default function LessonsPage() {
         }
     }, [supabase])
 
-    // Filter lessons based on search
-    const filteredLessons = lessons.filter(lesson =>
-        (lesson.student?.full_name || lesson.student?.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lesson.title.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    // Filter lessons based on search and status
+    const filteredLessons = lessons.filter(lesson => {
+        const matchesSearch = (lesson.student?.full_name || lesson.student?.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             lesson.title.toLowerCase().includes(searchTerm.toLowerCase())
+        
+        const matchesStatus = statusFilter === 'all' || lesson.status === statusFilter
+        
+        return matchesSearch && matchesStatus
+    })
 
     return (
         <div className="space-y-6">
@@ -134,12 +140,38 @@ export default function LessonsPage() {
                         <Input
                             placeholder="Buscar..."
                             className="pl-8"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
 
-                    <Card>
+                        <div className="flex bg-muted p-1 rounded-md mb-4 overflow-x-auto no-scrollbar">
+                            <button 
+                                onClick={() => setStatusFilter('all')}
+                                className={cn("px-3 py-1.5 text-sm font-medium rounded-sm transition-colors", statusFilter === 'all' ? "bg-white shadow-sm" : "hover:text-foreground/80 text-muted-foreground")}
+                            >
+                                Todas
+                            </button>
+                            <button 
+                                onClick={() => setStatusFilter('scheduled')}
+                                className={cn("px-3 py-1.5 text-sm font-medium rounded-sm transition-colors", statusFilter === 'scheduled' ? "bg-white shadow-sm" : "hover:text-foreground/80 text-muted-foreground")}
+                            >
+                                Futuras
+                            </button>
+                            <button 
+                                onClick={() => setStatusFilter('completed')}
+                                className={cn("px-3 py-1.5 text-sm font-medium rounded-sm transition-colors", statusFilter === 'completed' ? "bg-white shadow-sm" : "hover:text-foreground/80 text-muted-foreground")}
+                            >
+                                Realizadas
+                            </button>
+                            <button 
+                                onClick={() => setStatusFilter('cancelled')}
+                                className={cn("px-3 py-1.5 text-sm font-medium rounded-sm transition-colors", statusFilter === 'cancelled' ? "bg-white shadow-sm" : "hover:text-foreground/80 text-muted-foreground")}
+                            >
+                                Canceladas
+                            </button>
+                        </div>
+
+                        <Card>
                         <CardHeader>
                             <CardTitle>Todas as Aulas</CardTitle>
                         </CardHeader>
@@ -173,8 +205,20 @@ export default function LessonsPage() {
                                                 </div>
 
                                                 <div className="flex flex-col items-end gap-2">
-                                                    <Badge variant={lesson.status === 'completed' ? 'secondary' : 'outline'}>
-                                                        {lesson.status === 'completed' ? 'Concluída' : 'Agendada'}
+                                                    <Badge 
+                                                        variant={
+                                                            lesson.status === 'completed' ? 'secondary' : 
+                                                            lesson.status === 'cancelled' ? 'destructive' : 
+                                                            'outline'
+                                                        }
+                                                        className={cn(
+                                                            lesson.status === 'completed' && "bg-green-100 text-green-800 hover:bg-green-100",
+                                                            lesson.status === 'cancelled' && "bg-red-100 text-red-800 hover:bg-red-100",
+                                                            lesson.status === 'scheduled' && "bg-blue-100 text-blue-800 hover:bg-blue-100"
+                                                        )}
+                                                    >
+                                                        {lesson.status === 'completed' ? 'Concluída' : 
+                                                         lesson.status === 'cancelled' ? 'Cancelada' : 'Agendada'}
                                                     </Badge>
                                                     <span className="text-sm font-medium hidden sm:block">{lesson.time}</span>
                                                     <Button variant="ghost" size="sm" onClick={() => setEditingLesson(lesson)}>

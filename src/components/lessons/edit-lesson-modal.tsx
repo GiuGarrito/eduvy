@@ -50,6 +50,7 @@ export function EditLessonModal({ open, onOpenChange, lesson, onSuccess }: EditL
     const [meetLink, setMeetLink] = useState("")
     const [videos, setVideos] = useState<{ title: string, url: string }[]>([])
     const [materials, setMaterials] = useState<{ title: string, url: string }[]>([])
+    const [status, setStatus] = useState("scheduled")
     const [loading, setLoading] = useState(false)
     const [userRole, setUserRole] = useState<'admin' | 'student' | null>(null)
 
@@ -84,6 +85,7 @@ export function EditLessonModal({ open, onOpenChange, lesson, onSuccess }: EditL
             setMeetLink(lesson.meet_link || "")
             setVideos(lesson.videos || [])
             setMaterials(lesson.materials || [])
+            setStatus(lesson.status || "scheduled")
 
             const fetchStudents = async () => {
                 const { data, error } = await supabase
@@ -162,6 +164,7 @@ export function EditLessonModal({ open, onOpenChange, lesson, onSuccess }: EditL
                 date,
                 time,
                 notes,
+                status,
             }
 
             if (!isStudent) {
@@ -287,6 +290,23 @@ export function EditLessonModal({ open, onOpenChange, lesson, onSuccess }: EditL
                                 value={meetLink}
                                 onChange={(e) => setMeetLink(e.target.value)}
                             />
+                        </div>
+                    )}
+
+
+                    {!isStudent && (
+                        <div className="grid gap-2">
+                            <Label htmlFor="status">Status da Aula</Label>
+                            <Select value={status} onValueChange={setStatus}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecione o status..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="scheduled">Agendada</SelectItem>
+                                    <SelectItem value="completed">Concluída (Aula Dada)</SelectItem>
+                                    <SelectItem value="cancelled">Cancelada</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     )}
 
