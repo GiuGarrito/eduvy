@@ -42,25 +42,25 @@ export default function LessonsPage() {
     const [loading, setLoading] = useState(true)
     const supabase = createClient()
 
-    useEffect(() => {
-        const fetchLessons = async () => {
-            setLoading(true)
-            const { data, error } = await supabase
-                .from('lessons')
-                .select(`
-                    *,
-                    student:profiles(full_name, email)
-                `)
-                .order('date', { ascending: true })
-                .order('time', { ascending: true })
+    const fetchLessons = async () => {
+        setLoading(true)
+        const { data, error } = await supabase
+            .from('lessons')
+            .select(`
+                *,
+                student:profiles(full_name, email)
+            `)
+            .order('date', { ascending: true })
+            .order('time', { ascending: true })
 
-            if (data) {
-                // @ts-ignore - Supabase type conversion
-                setLessons(data)
-            }
-            setLoading(false)
+        if (data) {
+            // @ts-ignore - Supabase type conversion
+            setLessons(data)
         }
+        setLoading(false)
+    }
 
+    useEffect(() => {
         // Initial fetch
         fetchLessons()
 
@@ -244,7 +244,7 @@ export default function LessonsPage() {
                     open={!!editingLesson}
                     onOpenChange={(open) => !open && setEditingLesson(null)}
                     lesson={editingLesson}
-                    onSuccess={() => window.location.reload()} // Quick refresh for now
+                    onSuccess={fetchLessons}
                 />
 
                 {/* Calendar View */}
