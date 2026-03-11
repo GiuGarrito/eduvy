@@ -8,6 +8,14 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 
+interface Lesson {
+    id: string
+    title: string
+    date: string
+    time: string
+    status: string
+}
+
 export default async function StudentLessonsPage() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -24,10 +32,10 @@ export default async function StudentLessonsPage() {
         .order('date', { ascending: true })
         .order('time', { ascending: true })
 
-    const upcomingLessons = lessons?.filter(l => l.status === 'scheduled') || []
-    const pastLessons = lessons?.filter(l => l.status === 'completed') || []
+    const upcomingLessons = (lessons as Lesson[] | null)?.filter(l => l.status === 'scheduled') || []
+    const pastLessons = (lessons as Lesson[] | null)?.filter(l => l.status === 'completed') || []
 
-    const LessonCard = ({ lesson, isPast = false }: { lesson: any, isPast?: boolean }) => (
+    const LessonCard = ({ lesson, isPast = false }: { lesson: Lesson, isPast?: boolean }) => (
         <Card className={`hover:shadow-md transition-shadow ${!isPast ? 'border-l-4 border-l-blue-500' : 'bg-muted/40'}`}>
             <CardContent className="p-4 flex items-center justify-between">
                 <div className="space-y-1">
