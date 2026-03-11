@@ -40,15 +40,17 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
-    if (request.nextUrl.pathname.startsWith('/portal') && !user) {
+    const isLoginPage = request.nextUrl.pathname === '/login'
+    const isAuthCallback = request.nextUrl.pathname.startsWith('/auth')
+    const isPublicStaticFile = request.nextUrl.pathname.match(/\.(svg|png|jpg|jpeg|gif|webp|ico)$/)
+
+    // 1. Se NÃO estiver logado e NÃO for uma página pública, vai para /login
+    if (!user && !isLoginPage && !isAuthCallback && !isPublicStaticFile) {
         return NextResponse.redirect(new URL('/login', request.url))
     }
 
-    if (request.nextUrl.pathname === '/' && !user) {
-        return NextResponse.redirect(new URL('/login', request.url))
-    }
-
-    if (user && request.nextUrl.pathname === '/login') {
+    // 2. Se ESTIVER logado e tentar acessar /login, vai para a home (dashboard admin ou portal)
+    if (user && isLoginPage) {
         return NextResponse.redirect(new URL('/', request.url))
     }
 
