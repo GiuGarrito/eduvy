@@ -5,8 +5,24 @@ import { cookies } from 'next/headers'
 export const createClient = async () => {
     const cookieStore = await cookies()
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!url || !key) {
+        return {
+            auth: {
+                getUser: () => Promise.resolve({ data: { user: null }, error: null }),
+            },
+            from: () => ({
+                select: () => ({
+                    eq: () => ({ single: () => Promise.resolve({ data: null, error: null }), order: () => Promise.resolve({ data: [], error: null }) }),
+                    single: () => Promise.resolve({ data: null, error: null }),
+                    order: () => Promise.resolve({ data: [], error: null }),
+                    limit: () => Promise.resolve({ data: [], error: null }),
+                }),
+            })
+        } as any
+    }
 
     return createServerClient(
         url,

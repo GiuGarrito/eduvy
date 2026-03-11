@@ -9,8 +9,14 @@ export async function updateSession(request: NextRequest) {
         },
     })
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!url || !key) {
+        // Durante o build ou se as chaves não estiverem configuradas, o middleware
+        // apenas passará a requisição adiante sem tentar autenticar no Supabase.
+        return response
+    }
 
     const supabase = createServerClient(
         url,
