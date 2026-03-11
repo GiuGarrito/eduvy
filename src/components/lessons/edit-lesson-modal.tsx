@@ -154,6 +154,43 @@ export function EditLessonModal({ open, onOpenChange, lesson, onSuccess }: EditL
         }
     }
 
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setLoading(true)
+        try {
+            const updateData: any = {
+                date,
+                time,
+                notes,
+            }
+
+            if (!isStudent) {
+                updateData.student_id = studentId
+                updateData.title = title
+                updateData.content = content
+                updateData.meet_link = meetLink
+                updateData.videos = videos
+                updateData.materials = materials
+            }
+
+            const { error } = await supabase
+                .from('lessons')
+                .update(updateData)
+                .eq('id', lesson.id)
+
+            if (error) throw error
+
+            alert("Aula atualizada com sucesso!")
+            onOpenChange(false)
+            if (onSuccess) onSuccess()
+            router.refresh()
+        } catch (error: any) {
+            alert('Erro ao atualizar aula: ' + error.message)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const isStudent = userRole === 'student'
     const canEditOrCancel = () => {
         if (userRole === 'admin') return true
