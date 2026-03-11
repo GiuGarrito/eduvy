@@ -69,7 +69,7 @@ export default function AgendarAulaPage() {
                     .neq('status', 'cancelled')
 
                 if (myLessons) {
-                    setStudentBookedDates(myLessons.map(l => l.date))
+                    setStudentBookedDates(myLessons.map((l: { date: string }) => l.date))
                 }
             }
         }
@@ -110,7 +110,7 @@ export default function AgendarAulaPage() {
                 .eq('date', dateStr)
                 .neq('status', 'cancelled')
 
-            const takenTimes = lessons?.map(l => l.time.substring(0, 5)) || []
+            const takenTimes = lessons?.map((l: { time: string }) => l.time.substring(0, 5)) || []
 
             // 4. Generate slots based on rule (Hourly slots)
             const slots = []
