@@ -218,18 +218,20 @@ export default function AgendarAulaPage() {
             </div>
 
             <div className="grid md:grid-cols-[auto_1fr] gap-8">
-                <Card className="w-fit h-fit">
-                    <CardContent className="p-0">
-                        <Calendar
-                            mode="single"
-                            selected={date}
-                            onSelect={setDate}
-                            locale={ptBR}
-                            disabled={isDateDisabled}
-                            className="rounded-md border shadow"
-                        />
-                    </CardContent>
-                </Card>
+                <div className="flex justify-center w-full md:w-fit">
+                    <Card className="w-full max-w-[400px] md:w-fit h-fit border-none shadow-none md:border md:shadow-sm">
+                        <CardContent className="p-0 flex justify-center">
+                            <Calendar
+                                mode="single"
+                                selected={date}
+                                onSelect={setDate}
+                                locale={ptBR}
+                                disabled={isDateDisabled}
+                                className="rounded-md border shadow-md scale-110 sm:scale-100 origin-top"
+                            />
+                        </CardContent>
+                    </Card>
+                </div>
 
                 <div className="space-y-4">
                     {date ? (

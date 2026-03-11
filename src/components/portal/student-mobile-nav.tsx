@@ -13,15 +13,15 @@ export function StudentMobileNav() {
     return (
         <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden font-sans">
             {/* Curved Background Container */}
-            <div className="relative bg-primary h-16 w-full flex items-center justify-center gap-20 rounded-t-2xl shadow-[0_-4px_10px_rgba(0,0,0,0.1)]">
+            <div className="relative bg-primary h-16 w-full flex items-center justify-around px-2 rounded-t-2xl shadow-[0_-4px_10px_rgba(0,0,0,0.1)]">
 
                 {/* Left Side Items */}
-                <div className="flex items-center gap-3">
-                    <Link href="/portal/agendar" className="flex flex-col items-center gap-1">
+                <div className="flex items-center justify-between w-[40%] px-2">
+                    <Link href="/portal/agendar" className="flex flex-col items-center gap-1 active:scale-90 transition-transform">
                         <CalendarPlus className={cn("h-6 w-6 transition-colors", isActive('/portal/agendar') ? "text-white fill-white/20" : "text-white/60")} />
                         <span className={cn("text-[10px] font-medium", isActive('/portal/agendar') ? "text-white" : "text-white/60")}>Agendar</span>
                     </Link>
-                    <Link href="/portal/aulas" className="flex flex-col items-center gap-1">
+                    <Link href="/portal/aulas" className="flex flex-col items-center gap-1 active:scale-90 transition-transform">
                         <BookOpen className={cn("h-6 w-6 transition-colors", isActive('/portal/aulas') ? "text-white fill-white/20" : "text-white/60")} />
                         <span className={cn("text-[10px] font-medium", isActive('/portal/aulas') ? "text-white" : "text-white/60")}>Aulas</span>
                     </Link>
@@ -35,12 +35,12 @@ export function StudentMobileNav() {
                 </div>
 
                 {/* Right Side Items */}
-                <div className="flex items-center gap-3">
-                    <Link href="/portal/duvidas" className="flex flex-col items-center gap-1">
+                <div className="flex items-center justify-between w-[40%] px-2">
+                    <Link href="/portal/duvidas" className="flex flex-col items-center gap-1 active:scale-90 transition-transform">
                         <HelpCircle className={cn("h-6 w-6 transition-colors", isActive('/portal/duvidas') ? "text-white fill-white/20" : "text-white/60")} />
                         <span className={cn("text-[10px] font-medium", isActive('/portal/duvidas') ? "text-white" : "text-white/60")}>Dúvidas</span>
                     </Link>
-                    <Link href="/portal/avisos" className="flex flex-col items-center gap-1">
+                    <Link href="/portal/avisos" className="flex flex-col items-center gap-1 active:scale-90 transition-transform">
                         <Megaphone className={cn("h-6 w-6 transition-colors", isActive('/portal/avisos') ? "text-white fill-white/20" : "text-white/60")} />
                         <span className={cn("text-[10px] font-medium", isActive('/portal/avisos') ? "text-white" : "text-white/60")}>Avisos</span>
                     </Link>
