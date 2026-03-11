@@ -5,9 +5,12 @@ import { cookies } from 'next/headers'
 export const createClient = async () => {
     const cookieStore = await cookies()
 
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+
     return createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        url,
+        key,
         {
             cookies: {
                 getAll() {
