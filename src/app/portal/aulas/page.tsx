@@ -1,12 +1,15 @@
+"use client"
 
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
-import { Calendar, CheckCircle2, Clock, PlayCircle } from "lucide-react"
-import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
+import { Calendar, CheckCircle2, Clock, PlayCircle, Settings2, XCircle } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { EditLessonModal } from "@/components/lessons/edit-lesson-modal"
 
 interface Lesson {
     id: string
@@ -16,60 +19,98 @@ interface Lesson {
     status: string
 }
 
-export default async function StudentLessonsPage() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+export default function StudentLessonsPage() {
+    const [lessons, setLessons] = useState<Lesson[]>([])
+    const [loading, setLoading] = useState(true)
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+    const [selectedLesson, setSelectedLesson] = useState<any>(null)
+    
+    const supabase = createClient()
+    const router = useRouter()
 
-    if (!user) {
-        redirect('/login')
+    const fetchLessons = async () => {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+            router.push('/login')
+            return
+        }
+
+        const { data } = await supabase
+            .from('lessons')
+            .select('*')
+            .eq('student_id', user.id)
+            .order('date', { ascending: true })
+            .order('time', { ascending: true })
+
+        if (data) {
+            setLessons(data as Lesson[])
+        }
+        setLoading(false)
     }
 
-    // Fetch lessons for the student
-    const { data: lessons } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('student_id', user.id)
-        .order('date', { ascending: true })
-        .order('time', { ascending: true })
+    useEffect(() => {
+        fetchLessons()
+    }, [])
 
-    const upcomingLessons = (lessons as Lesson[] | null)?.filter(l => l.status === 'scheduled') || []
-    const pastLessons = (lessons as Lesson[] | null)?.filter(l => l.status === 'completed') || []
+    const upcomingLessons = lessons.filter(l => l.status === 'scheduled')
+    const pastLessons = lessons.filter(l => l.status === 'completed')
+    const cancelledLessons = lessons.filter(l => l.status === 'cancelled')
 
-    const LessonCard = ({ lesson, isPast = false }: { lesson: Lesson, isPast?: boolean }) => (
-        <Card className={`hover:shadow-md transition-shadow ${!isPast ? 'border-l-4 border-l-blue-500' : 'bg-muted/40'}`}>
+    const handleEditClick = (lesson: Lesson) => {
+        setSelectedLesson(lesson)
+        setIsEditModalOpen(true)
+    }
+
+    const LessonCard = ({ lesson, isPast = false, isCancelled = false }: { lesson: Lesson, isPast?: boolean, isCancelled?: boolean }) => (
+        <Card className={`hover:shadow-md transition-shadow ${!isPast && !isCancelled ? 'border-l-4 border-l-blue-500' : 'bg-muted/40'} ${isCancelled ? 'opacity-60' : ''}`}>
             <CardContent className="p-4 flex items-center justify-between">
                 <div className="space-y-1">
-                    <div className="font-semibold text-lg">{lesson.title}</div>
+                    <div className={`font-semibold text-lg ${isCancelled ? 'line-through' : ''}`}>{lesson.title}</div>
                     <div className="flex items-center text-sm text-muted-foreground gap-3">
                         <span className="flex items-center">
                             <Calendar className="mr-1 h-3 w-3" />
-                            {new Date(lesson.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                            {new Date(lesson.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
                         </span>
                         <span className="flex items-center">
                             <Clock className="mr-1 h-3 w-3" />
-                            {lesson.time}
+                            {lesson.time.slice(0, 5)}
                         </span>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                    {isPast ? (
+                    {isCancelled ? (
+                        <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50">
+                            <XCircle className="h-3 w-3 mr-1" />
+                            Cancelada
+                        </Badge>
+                    ) : isPast ? (
                         <Badge variant="outline" className="text-green-600 border-green-200">
                             <CheckCircle2 className="h-3 w-3 mr-1" />
                             Realizada
                         </Badge>
                     ) : (
-                        <Button size="sm" className="gap-2" asChild>
-                            <Link href={`/portal/aula/${lesson.id}`}>
-                                <PlayCircle className="h-4 w-4" />
-                                Entrar
-                            </Link>
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button size="sm" variant="outline" className="gap-2" onClick={() => handleEditClick(lesson)}>
+                                <Settings2 className="h-4 w-4" />
+                                Alterar/Cancelar
+                            </Button>
+                            <Button size="sm" className="gap-2" asChild>
+                                <Link href={`/portal/aula/${lesson.id}`}>
+                                    <PlayCircle className="h-4 w-4" />
+                                    Entrar
+                                </Link>
+                            </Button>
+                        </div>
                     )}
                 </div>
             </CardContent>
         </Card>
     )
+
+    if (loading) {
+        return <div className="p-8 text-center text-muted-foreground">Carregando suas aulas...</div>
+    }
 
     return (
         <div className="space-y-6">
@@ -95,6 +136,20 @@ export default async function StudentLessonsPage() {
                 </div>
             </section>
 
+            {cancelledLessons.length > 0 && (
+                <>
+                    <Separator />
+                    <section>
+                        <h2 className="text-lg font-semibold mb-4 text-muted-foreground">Aulas Canceladas</h2>
+                        <div className="space-y-3">
+                            {cancelledLessons.map(lesson => (
+                                <LessonCard key={lesson.id} lesson={lesson} isCancelled />
+                            ))}
+                        </div>
+                    </section>
+                </>
+            )}
+
             <Separator />
 
             {/* History */}
@@ -109,6 +164,13 @@ export default async function StudentLessonsPage() {
                     )}
                 </div>
             </section>
+
+            <EditLessonModal 
+                open={isEditModalOpen} 
+                onOpenChange={setIsEditModalOpen} 
+                lesson={selectedLesson} 
+                onSuccess={fetchLessons}
+            />
         </div>
     )
 }

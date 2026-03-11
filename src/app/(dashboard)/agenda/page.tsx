@@ -31,6 +31,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner" // Assuming sonner is installed/configured, or use alert if not available yet. Using alert for now to be safe based on existing code.
+import { EditLessonModal } from "@/components/lessons/edit-lesson-modal"
 
 const weekDays = [
     "Segunda-feira",
@@ -45,6 +46,7 @@ interface Lesson {
     title: string
     date: string // YYYY-MM-DD
     time: string // HH:mm
+    status: string
     student: {
         full_name: string
     }
@@ -70,6 +72,9 @@ export default function AgendaPage() {
     const [newLessonTitle, setNewLessonTitle] = useState("Aula Avulsa")
     const [creatingLesson, setCreatingLesson] = useState(false)
 
+    // Edit Modal State
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+    const [selectedLesson, setSelectedLesson] = useState<any>(null)
 
     // Calculate current week dates
     const today = new Date()
@@ -141,6 +146,11 @@ export default function AgendaPage() {
             fetchLessons()
         }
         setCreatingLesson(false)
+    }
+
+    const handleLessonActions = (lesson: any) => {
+        setSelectedLesson(lesson)
+        setIsEditModalOpen(true)
     }
 
 
@@ -251,13 +261,17 @@ export default function AgendaPage() {
                                         {dayLessons.map((lesson: Lesson) => (
                                             <div
                                                 key={lesson.id}
-                                                className="p-3 bg-white rounded-md border shadow-sm text-sm hover:border-blue-400 transition-colors cursor-default"
+                                                className={`p-3 bg-white rounded-md border shadow-sm text-sm hover:border-blue-400 transition-colors cursor-pointer ${lesson.status === 'cancelled' ? 'opacity-50 line-through' : ''}`}
+                                                onClick={() => handleLessonActions(lesson)}
                                             >
                                                 <div className="font-bold text-blue-600">{lesson.time.slice(0, 5)}</div>
                                                 <div className="font-medium truncate" title={lesson.student?.full_name}>
                                                     {lesson.student?.full_name}
                                                 </div>
                                                 <div className="text-xs text-muted-foreground truncate">{lesson.title}</div>
+                                                {lesson.status === 'cancelled' && (
+                                                    <div className="text-[10px] text-red-500 font-bold mt-1">CANCELADA</div>
+                                                )}
                                             </div>
                                         ))}
                                         {dayLessons.length === 0 && (
@@ -272,6 +286,13 @@ export default function AgendaPage() {
                     )
                 })}
             </div>
+
+            <EditLessonModal 
+                open={isEditModalOpen} 
+                onOpenChange={setIsEditModalOpen} 
+                lesson={selectedLesson} 
+                onSuccess={fetchLessons}
+            />
         </div>
     )
 }
