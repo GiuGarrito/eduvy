@@ -156,7 +156,7 @@ export default function DisponibilidadePage() {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {WEEKDAYS.map(day => (
+                                        {WEEKDAYS.map((day: { value: number, label: string }) => (
                                             <SelectItem key={day.value} value={day.value.toString()}>
                                                 {day.label}
                                             </SelectItem>
@@ -183,11 +183,11 @@ export default function DisponibilidadePage() {
                             ) : availability.length === 0 ? (
                                 <p className="text-sm text-muted-foreground text-center py-4">Nenhum horário definido.</p>
                             ) : (
-                                availability.map((item) => (
+                                availability.map((item: Availability) => (
                                     <div key={item.id} className="flex items-center justify-between p-3 border rounded-md bg-slate-50">
                                         <div className="flex items-center gap-2">
                                             <span className="font-medium">
-                                                {WEEKDAYS.find(d => d.value === item.day_of_week)?.label}
+                                                {WEEKDAYS.find((d: { value: number, label: string }) => d.value === item.day_of_week)?.label}
                                             </span>
                                             <span className="text-sm text-muted-foreground">
                                                 {item.start_time.slice(0, 5)} - {item.end_time.slice(0, 5)}
@@ -249,7 +249,7 @@ export default function DisponibilidadePage() {
                         </div>
 
                         <ul className="space-y-2 max-h-[300px] overflow-y-auto">
-                            {blockedDates.map((block) => (
+                            {blockedDates.map((block: BlockedDate) => (
                                 <li key={block.id} className="flex items-center justify-between p-2 border rounded-md text-sm">
                                     <div className="flex flex-col">
                                         <span className="font-medium">{format(new Date(block.date.replace(/-/g, '/')), 'dd/MM/yyyy')}</span>

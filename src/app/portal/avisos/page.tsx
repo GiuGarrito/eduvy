@@ -65,7 +65,7 @@ export default function StudentAvisosPage() {
                         <p className="text-gray-500">Tudo tranquilo por aqui! Volte mais tarde.</p>
                     </div>
                 ) : (
-                    announcements.map((announcement) => (
+                    announcements.map((announcement: Announcement) => (
                         <Card key={announcement.id} className="border-l-4 border-l-primary shadow-sm hover:shadow transition-shadow">
                             <CardHeader>
                                 <div className="flex justify-between items-start">

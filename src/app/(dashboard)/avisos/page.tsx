@@ -235,7 +235,7 @@ export default function AvisosPage() {
                     <TabsTrigger value="announcements">Avisos</TabsTrigger>
                     <TabsTrigger value="doubts" className="relative">
                         Dúvidas
-                        {doubts.filter(d => !d.answer).length > 0 && (
+                        {doubts.filter((d: Doubt) => !d.answer).length > 0 && (
                             <span className="absolute -top-1 -right-1 flex h-3 w-3">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
@@ -262,7 +262,7 @@ export default function AvisosPage() {
                                 <p className="text-gray-500">Clique em "Novo Aviso" para criar o primeiro comunicado.</p>
                             </div>
                         ) : (
-                            announcements.map((announcement) => (
+                            announcements.map((announcement: Announcement) => (
                                 <Card key={announcement.id}>
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                         <div className="space-y-1">
@@ -318,7 +318,7 @@ export default function AvisosPage() {
                         ) : doubts.length === 0 ? (
                             <div className="text-center py-12 text-muted-foreground">Nenhuma dúvida recebida ainda.</div>
                         ) : (
-                            doubts.map((doubt) => (
+                            doubts.map((doubt: Doubt) => (
                                 <Card key={doubt.id} className={!doubt.answer ? "border-l-4 border-l-yellow-400" : "border-l-4 border-l-green-500"}>
                                     <CardHeader>
                                         <div className="flex justify-between items-start">
@@ -412,7 +412,7 @@ export default function AvisosPage() {
                                             <span>Todos os Alunos (Público)</span>
                                         </div>
                                     </SelectItem>
-                                    {students.map((student) => (
+                                    {students.map((student: Student) => (
                                         <SelectItem key={student.id} value={student.id}>
                                             <div className="flex items-center gap-2">
                                                 <User className="h-4 w-4" />

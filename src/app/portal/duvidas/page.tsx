@@ -111,7 +111,7 @@ export default function DoubtsPage() {
                         Você ainda não enviou nenhuma dúvida.
                     </div>
                 ) : (
-                    doubts.map((doubt) => (
+                    doubts.map((doubt: Doubt) => (
                         <Card key={doubt.id} className={!doubt.answer ? 'border-dashed' : ''}>
                             <CardHeader className="pb-3">
                                 <div className="flex justify-between items-start">

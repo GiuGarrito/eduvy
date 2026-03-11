@@ -224,8 +224,8 @@ export default function LessonsPage() {
                             <CardContent>
                                 <div className="space-y-4">
                                     {lessons
-                                        .filter(l => l.date === date?.toISOString().split('T')[0])
-                                        .map(lesson => (
+                                        .filter((l: Lesson) => l.date === date?.toISOString().split('T')[0])
+                                        .map((lesson: Lesson) => (
                                             <div key={lesson.id} className="flex items-center justify-between p-3 border rounded-md">
                                                 <div>
                                                     <div className="font-medium">{lesson.student?.full_name || lesson.student?.email}</div>
@@ -237,7 +237,7 @@ export default function LessonsPage() {
                                                 </div>
                                             </div>
                                         ))}
-                                    {lessons.filter(l => l.date === date?.toISOString().split('T')[0]).length === 0 && (
+                                    {lessons.filter((l: Lesson) => l.date === date?.toISOString().split('T')[0]).length === 0 && (
                                         <div className="text-center py-12 text-muted-foreground">
                                             Sem aulas neste dia.
                                         </div>

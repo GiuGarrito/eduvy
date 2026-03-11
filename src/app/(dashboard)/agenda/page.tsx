@@ -234,8 +234,8 @@ export default function AgendaPage() {
             </header>
 
             <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5 h-[calc(100vh-200px)]">
-                {weekDates.map((dayDate, index) => {
-                    const dayLessons = lessons.filter(l => l.date === format(dayDate, 'yyyy-MM-dd'))
+                {weekDates.map((dayDate: Date, index: number) => {
+                    const dayLessons = lessons.filter((l: Lesson) => l.date === format(dayDate, 'yyyy-MM-dd'))
                     const currentDayName = weekDays[index]
 
                     return (
@@ -248,7 +248,7 @@ export default function AgendaPage() {
                             <CardContent className="flex-1 p-2">
                                 <ScrollArea className="h-full">
                                     <div className="space-y-2">
-                                        {dayLessons.map((lesson) => (
+                                        {dayLessons.map((lesson: Lesson) => (
                                             <div
                                                 key={lesson.id}
                                                 className="p-3 bg-white rounded-md border shadow-sm text-sm hover:border-blue-400 transition-colors cursor-default"

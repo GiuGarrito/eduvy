@@ -166,7 +166,7 @@ export default function FinancialPage() {
                                         Nenhum registro financeiro encontrado.
                                     </div>
                                 )}
-                                {payments.map((payment) => (
+                                {payments.map((payment: Payment) => (
                                     <div key={payment.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                                         <div>
                                             <p className="font-medium">{payment.description}</p>
@@ -206,7 +206,7 @@ export default function FinancialPage() {
                                                         if (error) alert('Erro ao atualizar')
                                                         else {
                                                             // Trigger refresh or state update
-                                                            setPayments(prev => prev.map(p => p.id === payment.id ? { ...p, status: 'paid' } : p))
+                                                            setPayments(prev => prev.map((p: Payment) => p.id === payment.id ? { ...p, status: 'paid' } : p))
                                                         }
                                                     }}
                                                 >
@@ -228,7 +228,7 @@ export default function FinancialPage() {
 
                                                     if (error) alert('Erro ao excluir')
                                                     else {
-                                                        setPayments(prev => prev.filter(p => p.id !== payment.id))
+                                                        setPayments(prev => prev.filter((p: Payment) => p.id !== payment.id))
                                                     }
                                                 }}
                                             >

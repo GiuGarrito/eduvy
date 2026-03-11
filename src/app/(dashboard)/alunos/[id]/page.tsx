@@ -104,8 +104,8 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
     }, [supabase, unwrappedParams])
 
     // Calculate Financial Status
-    const overduePayments = payments.filter(p => p.status === 'overdue')
-    const pendingPayments = payments.filter(p => p.status === 'pending')
+    const overduePayments = payments.filter((p: Payment) => p.status === 'overdue')
+    const pendingPayments = payments.filter((p: Payment) => p.status === 'pending')
     const isOverdue = overduePayments.length > 0
 
     if (loading) {
@@ -216,7 +216,7 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                {lessons.map((lesson) => (
+                                {lessons.map((lesson: Lesson) => (
                                     <div key={lesson.id} className="flex items-center justify-between p-4 border rounded-lg bg-white shadow-sm hover:shadow-md transition-all">
                                         <div className="flex items-center gap-4">
                                             <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">

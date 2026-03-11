@@ -85,7 +85,7 @@ export function DashboardWidgets() {
 
         if (data) {
             setOverdueCount(data.length)
-            setOverdueTotal(data.reduce((acc, curr) => acc + curr.amount, 0))
+            setOverdueTotal(data.reduce((acc: number, curr: any) => acc + (curr.amount || 0), 0))
         }
     }
 
@@ -134,7 +134,7 @@ export function DashboardWidgets() {
 
     const toggleReminder = async (id: string, currentStatus: boolean) => {
         // Optimistic update
-        setReminders(reminders.map(r => r.id === id ? { ...r, is_done: !currentStatus } : r))
+        setReminders(reminders.map((r: Reminder) => r.id === id ? { ...r, is_done: !currentStatus } : r))
 
         await supabase
             .from('reminders')
@@ -148,7 +148,7 @@ export function DashboardWidgets() {
         e.stopPropagation()
         if (!confirm('Excluir lembrete?')) return
 
-        setReminders(reminders.filter(r => r.id !== id))
+        setReminders(reminders.filter((r: Reminder) => r.id !== id))
         await supabase.from('reminders').delete().eq('id', id)
     }
 
@@ -213,7 +213,7 @@ export function DashboardWidgets() {
                                     Nenhuma aula agendada para este dia.
                                 </div>
                             ) : (
-                                selectedDayLessons.map(lesson => (
+                                selectedDayLessons.map((lesson: Lesson) => (
                                     <div key={lesson.id} className="flex items-center justify-between border p-3 rounded-lg">
                                         <div className="space-y-1">
                                             <p className="text-sm font-medium leading-none">{lesson.title}</p>
@@ -292,7 +292,7 @@ export function DashboardWidgets() {
                     </Dialog>
                 </CardHeader>
                 <CardContent className="space-y-2 mt-4">
-                    {reminders.map((reminder) => (
+                    {reminders.map((reminder: Reminder) => (
                         <div
                             key={reminder.id}
                             className="flex items-center justify-between rounded-md border p-2 hover:bg-accent transition-colors group"
