@@ -39,7 +39,9 @@ export default function DoubtsPage() {
             .eq('student_id', user.id)
             .order('created_at', { ascending: false })
 
-        if (!error) {
+        if (error) {
+            console.error("Erro ao buscar dúvidas:", error)
+        } else {
             setDoubts(data || [])
         }
         setLoading(false)

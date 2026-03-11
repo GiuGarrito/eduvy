@@ -225,18 +225,24 @@ export function EditLessonModal({ open, onOpenChange, lesson, onSuccess }: EditL
                         <>
                             <div className="grid gap-2">
                                 <Label htmlFor="student">Aluno</Label>
-                                <Select value={studentId} onValueChange={setStudentId} required>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecione um aluno..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {students.map((student) => (
-                                            <SelectItem key={student.id} value={student.id}>
-                                                {student.full_name || student.email}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                {lesson?.student_id ? (
+                                    <div className="p-2 bg-muted rounded-md border text-sm font-medium">
+                                        {lesson.student?.full_name || lesson.student?.email || "Aluno não identificado"}
+                                    </div>
+                                ) : (
+                                    <Select value={studentId} onValueChange={setStudentId} disabled={!!lesson?.student_id}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecione um aluno" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {students.map((student) => (
+                                                <SelectItem key={student.id} value={student.id}>
+                                                    {student.full_name || student.email}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
                             </div>
 
                             <div className="grid gap-2">
