@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar"
-import { Calendar, Home, Users, DollarSign, BookOpen, LogOut, Megaphone, Settings } from "lucide-react"
+import { Calendar, Home, Users, DollarSign, BookOpen, LogOut, Megaphone, Settings, MessageCircle } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { createClient } from "@/lib/supabase/client"
@@ -43,6 +43,11 @@ export function AppSidebar() {
             label: "Avisos",
             href: "/avisos",
             icon: <Megaphone className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        },
+        {
+            label: "Dúvidas",
+            href: "/duvidas",
+            icon: <MessageCircle className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         },
         {
             label: "Configurações",

@@ -49,6 +49,7 @@ interface Lesson {
     status: string
     student: {
         full_name: string
+        email: string
     }
 }
 
@@ -99,7 +100,7 @@ export default function AgendaPage() {
             .from('lessons')
             .select(`
                 id, title, date, time, status,
-                student:profiles(full_name)
+                student:profiles(full_name, email)
             `)
             .gte('date', startDate)
             .lte('date', endDate)
@@ -290,8 +291,8 @@ export default function AgendaPage() {
                                                 onClick={() => handleLessonActions(lesson)}
                                             >
                                                 <div className="font-bold text-blue-600">{lesson.time.slice(0, 5)}</div>
-                                                <div className="font-medium truncate" title={lesson.student?.full_name}>
-                                                    {lesson.student?.full_name}
+                                                <div className="font-medium truncate" title={lesson.student?.full_name || lesson.student?.email}>
+                                                    {lesson.student?.full_name || lesson.student?.email || 'Aluno'}
                                                 </div>
                                                 <div className="text-xs text-muted-foreground truncate">{lesson.title}</div>
                                                 {lesson.status === 'cancelled' && (
