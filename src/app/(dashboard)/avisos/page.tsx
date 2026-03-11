@@ -26,12 +26,26 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { createClient } from "@/lib/supabase/client"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { Users, User } from "lucide-react"
 
 type Announcement = {
     id: string
     title: string
     content: string
+    student_id: string | null
     created_at: string
+}
+
+type Student = {
+    id: string
+    full_name: string
 }
 
 type Doubt = {
@@ -56,6 +70,8 @@ export default function AvisosPage() {
     const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null)
     const [title, setTitle] = useState("")
     const [content, setContent] = useState("")
+    const [targetStudentId, setTargetStudentId] = useState<string>("all")
+    const [students, setStudents] = useState<Student[]>([])
     const [saving, setSaving] = useState(false)
 
     // Doubts State
@@ -69,7 +85,18 @@ export default function AvisosPage() {
     useEffect(() => {
         fetchAnnouncements()
         fetchDoubts()
+        fetchStudents()
     }, [])
+
+    const fetchStudents = async () => {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('id, full_name')
+            .eq('role', 'student')
+            .order('full_name')
+        
+        if (!error) setStudents(data || [])
+    }
 
     // --- Announcements Logic ---
 
@@ -87,6 +114,7 @@ export default function AvisosPage() {
     const resetForm = () => {
         setTitle("")
         setContent("")
+        setTargetStudentId("all")
         setEditingAnnouncement(null)
         setIsCreateOpen(false)
     }
@@ -99,7 +127,11 @@ export default function AvisosPage() {
             // Update
             const { error } = await supabase
                 .from('announcements')
-                .update({ title, content })
+                .update({ 
+                    title, 
+                    content,
+                    student_id: targetStudentId === "all" ? null : targetStudentId
+                })
                 .eq('id', editingAnnouncement.id)
 
             if (!error) {
@@ -113,7 +145,11 @@ export default function AvisosPage() {
             // Create
             const { error } = await supabase
                 .from('announcements')
-                .insert([{ title, content }])
+                .insert([{ 
+                    title, 
+                    content,
+                    student_id: targetStudentId === "all" ? null : targetStudentId
+                }])
 
             if (!error) {
                 alert('Aviso criado com sucesso!')
@@ -130,6 +166,7 @@ export default function AvisosPage() {
         setEditingAnnouncement(a)
         setTitle(a.title)
         setContent(a.content)
+        setTargetStudentId(a.student_id || "all")
         setIsCreateOpen(true)
     }
 
@@ -226,7 +263,20 @@ export default function AvisosPage() {
                             announcements.map((announcement) => (
                                 <Card key={announcement.id}>
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-xl font-bold">{announcement.title}</CardTitle>
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-2">
+                                                <CardTitle className="text-xl font-bold">{announcement.title}</CardTitle>
+                                                {announcement.student_id ? (
+                                                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 gap-1">
+                                                        <User className="h-3 w-3" /> Individual
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1">
+                                                        <Users className="h-3 w-3" /> Público
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                        </div>
                                         <div className="flex gap-1">
                                             <Button
                                                 variant="ghost"
@@ -346,6 +396,33 @@ export default function AvisosPage() {
                                 placeholder="Ex: Manutenção Programada"
                                 required
                             />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="target">Destinatário</Label>
+                            <Select value={targetStudentId} onValueChange={setTargetStudentId}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecione o público" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">
+                                        <div className="flex items-center gap-2">
+                                            <Users className="h-4 w-4" />
+                                            <span>Todos os Alunos (Público)</span>
+                                        </div>
+                                    </SelectItem>
+                                    {students.map((student) => (
+                                        <SelectItem key={student.id} value={student.id}>
+                                            <div className="flex items-center gap-2">
+                                                <User className="h-4 w-4" />
+                                                <span>{student.full_name} (Privado)</span>
+                                            </div>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <p className="text-[0.7rem] text-muted-foreground">
+                                Escolha "Todos" para um comunicado geral ou selecione um aluno específico.
+                            </p>
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="content">Conteúdo</Label>

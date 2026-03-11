@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, BookOpen, Wallet, Megaphone, HelpCircle } from "lucide-react"
+import { Home, BookOpen, Wallet, Megaphone, HelpCircle, CalendarPlus } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -17,13 +17,13 @@ export function StudentMobileNav() {
 
                 {/* Left Side Items */}
                 <div className="flex items-center gap-3">
+                    <Link href="/portal/agendar" className="flex flex-col items-center gap-1">
+                        <CalendarPlus className={cn("h-6 w-6 transition-colors", isActive('/portal/agendar') ? "text-white fill-white/20" : "text-white/60")} />
+                        <span className={cn("text-[10px] font-medium", isActive('/portal/agendar') ? "text-white" : "text-white/60")}>Agendar</span>
+                    </Link>
                     <Link href="/portal/aulas" className="flex flex-col items-center gap-1">
                         <BookOpen className={cn("h-6 w-6 transition-colors", isActive('/portal/aulas') ? "text-white fill-white/20" : "text-white/60")} />
                         <span className={cn("text-[10px] font-medium", isActive('/portal/aulas') ? "text-white" : "text-white/60")}>Aulas</span>
-                    </Link>
-                    <Link href="/portal/financeiro" className="flex flex-col items-center gap-1">
-                        <Wallet className={cn("h-6 w-6 transition-colors", isActive('/portal/financeiro') ? "text-white fill-white/20" : "text-white/60")} />
-                        <span className={cn("text-[10px] font-medium", isActive('/portal/financeiro') ? "text-white" : "text-white/60")}>Financeiro</span>
                     </Link>
                 </div>
 

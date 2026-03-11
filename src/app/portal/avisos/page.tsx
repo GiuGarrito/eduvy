@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Megaphone } from "lucide-react"
+import { Megaphone, User } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import {
     Card,
     CardContent,
@@ -15,6 +16,7 @@ type Announcement = {
     id: string
     title: string
     content: string
+    student_id: string | null
     created_at: string
 }
 
@@ -66,7 +68,14 @@ export default function StudentAvisosPage() {
                     announcements.map((announcement) => (
                         <Card key={announcement.id} className="border-l-4 border-l-primary shadow-sm hover:shadow transition-shadow">
                             <CardHeader>
-                                <CardTitle className="text-xl text-primary">{announcement.title}</CardTitle>
+                                <div className="flex justify-between items-start">
+                                    <CardTitle className="text-xl text-primary">{announcement.title}</CardTitle>
+                                    {announcement.student_id && (
+                                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 gap-1">
+                                            <User className="h-3 w-3" /> Pessoal
+                                        </Badge>
+                                    )}
+                                </div>
                             </CardHeader>
                             <CardContent>
                                 <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">

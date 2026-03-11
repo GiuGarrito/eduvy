@@ -6,10 +6,20 @@ import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
-import { format, addDays, isBefore, startOfDay, getDay, parse, isWithinInterval, startOfHour } from "date-fns"
+import { format, addDays, isBefore, startOfDay, getDay, parse } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { Loader2, ArrowLeft } from "lucide-react"
+import { Loader2, ArrowLeft, CalendarCheck, Clock, CheckCircle2 } from "lucide-react"
 import Link from "next/link"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface Availability {
     day_of_week: number
@@ -32,8 +42,13 @@ export default function AgendarAulaPage() {
     const [availabilityRules, setAvailabilityRules] = useState<Availability[]>([])
     const [blockedDates, setBlockedDates] = useState<BlockedDate[]>([])
     const [submitting, setSubmitting] = useState(false)
+    const [studentBookedDates, setStudentBookedDates] = useState<string[]>([]) // YYYY-MM-DD dates with lessons
 
-    // Fetch availability rules and blocked dates on mount
+    // Confirmation dialog state
+    const [confirmOpen, setConfirmOpen] = useState(false)
+    const [selectedTime, setSelectedTime] = useState<string | null>(null)
+
+    // Fetch availability rules, blocked dates, and student's booked dates on mount
     useEffect(() => {
         const fetchRules = async () => {
             const { data: rules } = await supabase.from('availability_weekly').select('*')
@@ -41,6 +56,22 @@ export default function AgendarAulaPage() {
 
             const { data: blocked } = await supabase.from('blocked_dates').select('date, start_time, end_time')
             if (blocked) setBlockedDates(blocked)
+
+            // Fetch student's own upcoming lessons to block those dates
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+                const today = format(new Date(), 'yyyy-MM-dd')
+                const { data: myLessons } = await supabase
+                    .from('lessons')
+                    .select('date')
+                    .eq('student_id', user.id)
+                    .gte('date', today)
+                    .neq('status', 'cancelled')
+
+                if (myLessons) {
+                    setStudentBookedDates(myLessons.map(l => l.date))
+                }
+            }
         }
         fetchRules()
     }, [supabase])
@@ -56,47 +87,41 @@ export default function AgendarAulaPage() {
             const dateStr = format(date, 'yyyy-MM-dd')
             const dayOfWeek = getDay(date)
 
-            // 1. Check if date is FULLY blocked
+            // 1. Check if date is FULLY blocked by admin
             const blocksForDay = blockedDates.filter(b => b.date === dateStr)
             const isFullyBlocked = blocksForDay.some(b => !b.start_time || !b.end_time)
 
             if (isFullyBlocked) {
                 setLoadingSlots(false)
-                return // Fully blocked
+                return
             }
 
             // 2. Get availability rule for this day
             const rule = availabilityRules.find(r => r.day_of_week === dayOfWeek)
             if (!rule) {
                 setLoadingSlots(false)
-                return // No availability for this day of week
+                return
             }
 
-            // 3. Get existing lessons for this date
+            // 3. Get ALL existing lessons for this date (all students)
             const { data: lessons } = await supabase
                 .from('lessons')
                 .select('time')
                 .eq('date', dateStr)
                 .neq('status', 'cancelled')
 
-            const takenTimes = lessons?.map(l => l.time.substring(0, 5)) || [] // HH:MM
+            const takenTimes = lessons?.map(l => l.time.substring(0, 5)) || []
 
-            // 4. Generate slots based on rule (Hourly slots for simplicity)
+            // 4. Generate slots based on rule (Hourly slots)
             const slots = []
             let current = parse(rule.start_time, 'HH:mm:ss', new Date())
             const end = parse(rule.end_time, 'HH:mm:ss', new Date())
 
-            // Add slots every 60 minutes
             while (isBefore(current, end)) {
                 const timeStr = format(current, 'HH:mm')
 
-                // Check if slot overlaps with any partial block
                 const slotIsBlocked = blocksForDay.some(b => {
-                    if (!b.start_time || !b.end_time) return false // Handled above, but safety check
-
-                    // Simple string comparison for HH:mm since valid format is guaranteed
-                    // Slot is blocked if it starts at or after block start AND before block end
-                    // (Assuming block is [start, end))
+                    if (!b.start_time || !b.end_time) return false
                     const bStart = b.start_time.slice(0, 5)
                     const bEnd = b.end_time.slice(0, 5)
                     return timeStr >= bStart && timeStr < bEnd
@@ -105,7 +130,6 @@ export default function AgendarAulaPage() {
                 if (!takenTimes.includes(timeStr) && !slotIsBlocked) {
                     slots.push(timeStr)
                 }
-                // Add 1 hour
                 current = new Date(current.getTime() + 60 * 60 * 1000)
             }
 
@@ -116,19 +140,23 @@ export default function AgendarAulaPage() {
         fetchSlots()
     }, [date, availabilityRules, blockedDates, supabase])
 
-    const handleSchedule = async (time: string) => {
-        if (!date) return
+    // Opens confirmation dialog instead of directly scheduling
+    const handleTimeClick = (time: string) => {
+        setSelectedTime(time)
+        setConfirmOpen(true)
+    }
 
-        // 24h enforcement check (Client side)
-        // Check if selected date+time is at least 24h from now
+    // Called when user clicks "Confirmar" in the dialog
+    const handleConfirm = async () => {
+        if (!date || !selectedTime) return
+
         const now = new Date()
-        const selectedDateTime = parse(`${format(date, 'yyyy-MM-dd')} ${time}`, 'yyyy-MM-dd HH:mm', new Date())
-
-        // Add 24 hours to now
+        const selectedDateTime = parse(`${format(date, 'yyyy-MM-dd')} ${selectedTime}`, 'yyyy-MM-dd HH:mm', new Date())
         const minDateTime = new Date(now.getTime() + 24 * 60 * 60 * 1000)
 
         if (isBefore(selectedDateTime, minDateTime)) {
             alert("Aulas devem ser agendadas com pelo menos 24 horas de antecedência.")
+            setConfirmOpen(false)
             return
         }
 
@@ -147,45 +175,33 @@ export default function AgendarAulaPage() {
             .insert({
                 title: 'Aula Agendada',
                 date: dateStr,
-                time: time,
+                time: selectedTime,
                 student_id: user.id,
                 status: 'scheduled'
             })
 
+        setConfirmOpen(false)
+        setSubmitting(false)
+
         if (error) {
             alert('Erro ao agendar aula. Tente novamente.')
         } else {
-            alert('Aula agendada com sucesso!')
             router.push('/portal')
             router.refresh()
         }
-        setSubmitting(false)
     }
 
-    // Disable dates: Past dates + Less than 24h from NOW implies we *can* select tomorrow if time fits.
-    // However, purely date-based disable:
-    // If today is 28th 10:00, 24h from now is 29th 10:00.
-    // So 28th is fully disabled. 29th is enabled (partial availability checked on slot selection).
-    // So we disable dates strictly BEFORE today. Actually, even today is "before 24h" always.
-    // So strictly, any date < tomorrow is impossible for 24h rule (unless checking specific time).
-    // Let's disable all dates < tomorrow.
-    // Actually, if it's 23:00 today, tomorrow 08:00 is < 24h.
-    // But tomorrow 23:01 is > 24h. So tomorrow *could* stick be valid.
-    // So we only disable dates BEFORE today? No, today is definitely out.
-    // So disable dates <= today? No, if I check at 00:01, tomorrow 00:02 is > 24h.
-    // Wait. 24h from NOW.
-    // If now is 10AM, 24h later is tomorrow 10AM.
-    // So tomorrow IS clickable.
-    // Today is NEVER clickable (unless time travel exists).
-    // So disable dates < tomorrow?
-    // startOfDay(addDays(now, 1)) is tomorrow 00:00.
-    // isBefore(date, startOfDay(addDays(now, 1))) -> disables today and past.
-    // Correct.
-
+    // Disable dates: past days and today. Only tomorrow onwards is allowed.
     const isDateDisabled = (day: Date) => {
         const tomorrow = startOfDay(addDays(new Date(), 1))
-        return isBefore(day, tomorrow)
+        if (isBefore(day, tomorrow)) return true
+
+        return false
     }
+
+    const formattedDate = date
+        ? format(date, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+        : ''
 
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
@@ -237,10 +253,11 @@ export default function AgendarAulaPage() {
                                             <Button
                                                 key={time}
                                                 variant="outline"
-                                                onClick={() => handleSchedule(time)}
+                                                onClick={() => handleTimeClick(time)}
                                                 disabled={submitting}
-                                                className="w-full"
+                                                className="w-full flex items-center gap-2"
                                             >
+                                                <Clock className="h-4 w-4 text-primary" />
                                                 {time}
                                             </Button>
                                         ))}
@@ -253,12 +270,57 @@ export default function AgendarAulaPage() {
                             </CardContent>
                         </Card>
                     ) : (
-                        <div className="h-full flex items-center justify-center text-muted-foreground bg-slate-50 rounded-lg border border-dashed p-8">
-                            Selecione uma data no calendário para ver os horários.
+                        <div className="h-full flex flex-col items-center justify-center text-muted-foreground bg-slate-50 rounded-lg border border-dashed p-8 gap-3">
+                            <CalendarCheck className="h-10 w-10 text-muted-foreground/50" />
+                            <p>Selecione uma data no calendário para ver os horários disponíveis.</p>
                         </div>
                     )}
                 </div>
             </div>
+
+            {/* Confirmation Dialog */}
+            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2">
+                            <CheckCircle2 className="h-5 w-5 text-primary" />
+                            Confirmar Agendamento
+                        </AlertDialogTitle>
+                        <AlertDialogDescription asChild>
+                            <div className="space-y-3 pt-1">
+                                <p>Você gostaria de agendar sua aula para:</p>
+                                <div className="bg-muted rounded-lg p-4 space-y-2">
+                                    <div className="flex items-center gap-2 font-medium text-foreground">
+                                        <CalendarCheck className="h-4 w-4 text-primary" />
+                                        <span className="capitalize">{formattedDate}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 font-medium text-foreground">
+                                        <Clock className="h-4 w-4 text-primary" />
+                                        <span>às {selectedTime}</span>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Ao confirmar, sua aula será registrada e você poderá visualizá-la na seção <strong>Minhas Aulas</strong>.
+                                </p>
+                            </div>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={submitting}>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleConfirm}
+                            disabled={submitting}
+                            className="flex items-center gap-2"
+                        >
+                            {submitting ? (
+                                <><Loader2 className="h-4 w-4 animate-spin" /> Agendando...</>
+                            ) : (
+                                'Confirmar Agendamento'
+                            )}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

@@ -9,7 +9,8 @@ import {
     HelpCircle,
     LogOut,
     Megaphone,
-    User
+    User,
+    CalendarPlus
 } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
@@ -33,6 +34,11 @@ export function PortalSidebar({ user }: PortalSidebarProps) {
             label: "Home",
             href: "/portal",
             icon: <Home className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        },
+        {
+            label: "Agendar Aula",
+            href: "/portal/agendar",
+            icon: <CalendarPlus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         },
         {
             label: "Minhas Aulas",
