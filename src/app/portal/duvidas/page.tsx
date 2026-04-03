@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Send, MessageCircle } from "lucide-react"
+import { Send, MessageCircle, AlertCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { toast } from "sonner"
 
 type Doubt = {
     id: string
@@ -41,6 +42,9 @@ export default function DoubtsPage() {
 
         if (error) {
             console.error("Erro ao buscar dúvidas:", error)
+            if (error.code === '42P01') {
+                toast.error("Sistema de dúvidas não configurado. Contate a professora.")
+            }
         } else {
             setDoubts(data || [])
         }

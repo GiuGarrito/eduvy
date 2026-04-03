@@ -34,9 +34,7 @@ const formSchema = z.object({
     }),
     email: z.string().optional(),
     password: z.string().optional(), // New field
-    phone: z.string().min(10, {
-        message: "Telefone inválido.",
-    }),
+    phone: z.string().optional(),
     frequency: z.enum(["1x", "2x", "3x"]),
     notes: z.string().optional(),
     monthlyFee: z.string().min(1, "Campo obrigatório"),

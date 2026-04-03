@@ -43,14 +43,18 @@ export default function AdminDoubtsPage() {
             .from('doubts')
             .select(`
                 *,
-                student:profiles(full_name, email)
+                student:profiles!doubts_student_id_fkey(full_name, email)
             `)
             .order('created_at', { ascending: false })
 
         if (error) {
             console.error("Erro ao buscar dúvidas:", error)
+            if (error.code === '42P01') {
+                toast.error("Tabela de dúvidas não encontrada. Execute o script create_doubts_table.sql no Supabase.")
+            } else {
+                toast.error("Erro ao carregar dúvidas: " + error.message)
+            }
         } else {
-            console.log("Dúvidas carregadas:", data)
             // @ts-ignore
             setDoubts(data || [])
         }

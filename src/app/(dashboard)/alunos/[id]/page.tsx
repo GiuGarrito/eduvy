@@ -3,7 +3,7 @@
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { ArrowLeft, Calendar, FileText, Plus, User, DollarSign, RefreshCw } from "lucide-react"
+import { ArrowLeft, Calendar, FileText, Plus, User, DollarSign, RefreshCw, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AddPaymentModal } from "@/components/finance/add-payment-modal"
 import { EditStudentModal } from "@/components/dashboard/edit-student-modal"
@@ -12,6 +12,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { createClient } from "@/lib/supabase/client"
+import { deleteStudentUser } from "@/app/actions/students"
+import { useRouter } from "next/navigation"
 
 interface StudentProfile {
     id: string
@@ -47,6 +49,7 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
     const [editingLesson, setEditingLesson] = useState<any>(null)
 
     const supabase = createClient()
+    const router = useRouter()
     const [unwrappedParams, setUnwrappedParams] = useState<{ id: string } | null>(null)
 
     useEffect(() => {
@@ -103,6 +106,17 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
         }
     }, [supabase, unwrappedParams])
 
+    const handleDeleteStudent = async () => {
+        if (!student) return
+        if (!confirm(`Tem certeza que deseja excluir o aluno "${student.full_name}"? Esta ação não pode ser desfeita.`)) return
+        const result = await deleteStudentUser(student.id)
+        if (result.error) {
+            alert(result.error)
+        } else {
+            router.push('/alunos')
+        }
+    }
+
     // Calculate Financial Status
     const overduePayments = payments.filter((p: Payment) => p.status === 'overdue')
     const pendingPayments = payments.filter((p: Payment) => p.status === 'pending')
@@ -133,9 +147,9 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                 <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(true)}>
                     <RefreshCw className="mr-2 h-4 w-4" /> Editar
                 </Button>
-                {/* <Badge variant="default" className="capitalize">
-                    Ativo
-                </Badge> */}
+                <Button variant="destructive" size="sm" onClick={handleDeleteStudent}>
+                    <Trash2 className="mr-2 h-4 w-4" /> Excluir
+                </Button>
             </div>
 
             <EditStudentModal

@@ -62,6 +62,33 @@ export async function createStudentUser(formData: FormData) {
     }
 }
 
+export async function deleteStudentUser(userId: string) {
+    if (!userId) {
+        return { error: "ID do usuário é obrigatório." }
+    }
+
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        {
+            cookies: {
+                getAll() { return cookieStore.getAll() },
+                setAll() { },
+            },
+        }
+    )
+
+    const { error } = await supabase.auth.admin.deleteUser(userId)
+
+    if (error) {
+        console.error("Delete User Error:", error)
+        return { error: `Erro ao excluir aluno: ${error.message}` }
+    }
+
+    return { success: true, message: "Aluno excluído com sucesso!" }
+}
+
 export async function updateStudentPassword(userId: string, newPassword: string) {
     if (!userId || !newPassword) {
         return { error: "ID do usuário e nova senha são obrigatórios." }

@@ -1,8 +1,8 @@
 
 import { PortalSidebar } from "@/components/portal/portal-sidebar"
 import { createClient } from "@/lib/supabase/server"
-
 import { StudentMobileNav } from "@/components/portal/student-mobile-nav"
+import { NotificationBell } from "@/components/notifications/notification-bell"
 
 export default async function PortalLayout({
     children,
@@ -35,8 +35,9 @@ export default async function PortalLayout({
             </div>
 
             <main className="flex-1 flex flex-col h-full overflow-hidden bg-background">
-                <header className="flex h-14 items-center gap-2 border-b bg-background px-4 lg:px-6 shadow-sm z-10 shrink-0 md:flex hidden">
+                <header className="flex h-14 items-center justify-between border-b bg-background px-4 lg:px-6 shadow-sm z-10 shrink-0">
                     <h1 className="font-semibold text-sm md:text-base text-primary">Portal do Aluno</h1>
+                    <NotificationBell />
                 </header>
                 <div className="flex-1 p-4 md:p-8 overflow-auto bg-secondary/30 pb-20 md:pb-8">
                     <div className="mx-auto max-w-4xl w-full">

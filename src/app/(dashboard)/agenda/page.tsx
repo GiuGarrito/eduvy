@@ -99,8 +99,8 @@ export default function AgendaPage() {
         const { data: lessonsData } = await supabase
             .from('lessons')
             .select(`
-                id, title, date, time, status,
-                student:profiles(full_name, email)
+                id, title, date, time, status, student_id,
+                student:profiles!lessons_student_id_fkey(full_name, email)
             `)
             .gte('date', startDate)
             .lte('date', endDate)

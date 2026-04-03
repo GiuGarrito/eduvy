@@ -35,6 +35,7 @@ import {
 import { StudentForm } from "@/components/dashboard/student-form"
 import { EditStudentModal } from "@/components/dashboard/edit-student-modal"
 import { createClient } from "@/lib/supabase/client"
+import { deleteStudentUser } from "@/app/actions/students"
 
 // Modified Type to match what we have/can get
 type Student = {
@@ -75,6 +76,16 @@ export default function StudentsPage() {
     const handleSuccess = () => {
         setOpen(false)
         fetchStudents()
+    }
+
+    const handleDelete = async (student: Student) => {
+        if (!confirm(`Tem certeza que deseja excluir o aluno "${student.full_name}"? Esta ação não pode ser desfeita.`)) return
+        const result = await deleteStudentUser(student.id)
+        if (result.error) {
+            alert(result.error)
+        } else {
+            fetchStudents()
+        }
     }
 
     const filteredStudents = students.filter(student =>
@@ -169,6 +180,13 @@ export default function StudentsPage() {
                                                         <Link href={`/alunos/${student.id}`}>
                                                             Ver Histórico
                                                         </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem
+                                                        className="text-red-600 focus:text-red-600"
+                                                        onClick={() => handleDelete(student)}
+                                                    >
+                                                        Excluir Aluno
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
