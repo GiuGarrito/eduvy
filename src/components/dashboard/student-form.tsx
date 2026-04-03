@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -32,7 +32,7 @@ const formSchema = z.object({
     name: z.string().min(2, {
         message: "Nome deve ter pelo menos 2 caracteres.",
     }),
-    email: z.string().optional(),
+    email: z.string().email("Email inválido").min(1, "Email é obrigatório"),
     password: z.string().optional(), // New field
     phone: z.string().optional(),
     frequency: z.enum(["1x", "2x", "3x"]),
@@ -45,6 +45,7 @@ const formSchema = z.object({
 })
 
 export function StudentForm({ onSuccess }: { onSuccess?: () => void }) {
+    const [submitting, setSubmitting] = useState(false)
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -77,24 +78,28 @@ export function StudentForm({ onSuccess }: { onSuccess?: () => void }) {
 
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values)
+        setSubmitting(true)
+        try {
+            const formData = new FormData()
+            formData.append("name", values.name)
+            formData.append("email", values.email)
+            if (values.password) formData.append("password", values.password)
+            formData.append("monthly_fee", values.monthlyFee)
+            formData.append("due_day", values.dueDay)
 
-        // Create FormData to pass to server action
-        const formData = new FormData()
-        formData.append("name", values.name)
-        if (values.email) formData.append("email", values.email)
-        if (values.password) formData.append("password", values.password) // Append password
-        formData.append("monthly_fee", values.monthlyFee)
-        formData.append("due_day", values.dueDay)
+            const result = await createStudentUser(formData)
 
-        // Calling server action
-        const result = await createStudentUser(formData)
-
-        if (result.error) {
-            alert(result.error)
-        } else {
-            alert(result.message) // Shows the temporary password
-            onSuccess?.()
+            if (result.error) {
+                alert(result.error)
+            } else {
+                alert(result.message)
+                onSuccess?.()
+            }
+        } catch (err) {
+            alert("Erro inesperado ao salvar aluno. Tente novamente.")
+            console.error(err)
+        } finally {
+            setSubmitting(false)
         }
     }
 
@@ -297,7 +302,9 @@ export function StudentForm({ onSuccess }: { onSuccess?: () => void }) {
                 />
 
                 <div className="flex justify-end pt-4">
-                    <Button type="submit" className="w-full md:w-auto">Salvar Aluno</Button>
+                    <Button type="submit" className="w-full md:w-auto" disabled={submitting}>
+                        {submitting ? "Salvando..." : "Salvar Aluno"}
+                    </Button>
                 </div>
             </form>
         </Form >
