@@ -39,6 +39,8 @@ const weekDays = [
     "Quarta-feira",
     "Quinta-feira",
     "Sexta-feira",
+    "Sábado",
+    "Domingo",
 ]
 
 interface Lesson {
@@ -93,7 +95,7 @@ export default function AgendaPage() {
 
     const fetchLessons = async () => {
         const startDate = format(startOfCurrentWeek, 'yyyy-MM-dd')
-        const endDate = format(addDays(startOfCurrentWeek, 4), 'yyyy-MM-dd') // Friday
+        const endDate = format(addDays(startOfCurrentWeek, 6), 'yyyy-MM-dd') // Sunday
 
         // Fetch Lessons
         const { data: lessonsData } = await supabase
@@ -181,7 +183,7 @@ export default function AgendaPage() {
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight text-gray-900">Agenda Semanal</h2>
                     <p className="text-muted-foreground">
-                        Semana de {format(startOfCurrentWeek, "dd/MM", { locale: ptBR })} a {format(addDays(startOfCurrentWeek, 4), "dd/MM", { locale: ptBR })}.
+                        Semana de {format(startOfCurrentWeek, "dd/MM", { locale: ptBR })} a {format(addDays(startOfCurrentWeek, 6), "dd/MM", { locale: ptBR })}.
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -264,7 +266,7 @@ export default function AgendaPage() {
                 </div>
             </header>
 
-            <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5 h-[calc(100vh-200px)]">
+            <div className="grid gap-4 md:grid-cols-4 lg:grid-cols-7 h-[calc(100vh-200px)]">
                 {weekDates.map((dayDate: Date, index: number) => {
                     const dateStr = format(dayDate, 'yyyy-MM-dd')
                     const dayLessons = lessons.filter((l: Lesson) => 

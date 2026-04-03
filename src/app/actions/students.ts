@@ -79,6 +79,13 @@ export async function deleteStudentUser(userId: string) {
         }
     )
 
+    // Delete related records first to avoid FK constraint errors
+    await supabase.from('payments').delete().eq('student_id', userId)
+    await supabase.from('lessons').delete().eq('student_id', userId)
+    await supabase.from('announcements').delete().eq('student_id', userId)
+    await supabase.from('doubts').delete().eq('student_id', userId)
+    await supabase.from('profiles').delete().eq('id', userId)
+
     const { error } = await supabase.auth.admin.deleteUser(userId)
 
     if (error) {
